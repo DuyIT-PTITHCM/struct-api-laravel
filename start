@@ -1,0 +1,63 @@
+#!/usr/bin/env sh
+
+RED='\033[0;3m'
+PURPLE='\033[0;35m'
+GREEN='\033[0;32m'
+NOCOLOR="\033[0m"
+
+BOLD='\033[1m'
+UNBOLD='\033[0m'
+
+# Create file .development for development env
+DEVELOPMENT=src/.development
+if [ ! -f "${DEVELOPMENT}" ]; then
+    touch "${DEVELOPMENT}"
+    chmod 777 artisan
+    chmod 777 composer
+    chmod 777 stop
+fi
+
+
+# Add url api.search-api.local to Host
+SEARCH_API_URL="api.search-api-clone.local"
+SEARCH_API_HOST="127.0.0.1 ${SEARCH_API_URL}"
+isInFile=$(cat /etc/hosts | grep -c "${SEARCH_API_HOST}")
+if [ "$isInFile" -eq 0 ]; then
+  echo "${SEARCH_API_HOST}" >> /etc/hosts
+fi
+
+if ! docker info > /dev/null 2>&1; then
+  echo "\n${RED}This script uses docker, and it isn't running - please start docker and try again!\n"
+  exit 1
+fi
+
+docker-compose up -d
+
+if [ "$1" == '--build' ]; then
+  ./composer install
+fi
+
+echo "\n${GREEN}${BOLD}Generating Swagger docs ...  ${UNBOLD}${NOCOLOR}"
+if [ "$1" == '--build' ]; then
+  ./artisan swagger-lume:publish
+fi
+./artisan swagger-lume:generate
+
+if [ "$1" == '--build' ]; then
+  echo "${PURPLE}${BOLD}
+         @@@@@@   @@@@@@@@   @@@@@@   @@@@@@@    @@@@@@@  @@@  @@@      @@@@@@   @@@@@@@   @@@
+        @@@@@@@   @@@@@@@@  @@@@@@@@  @@@@@@@@  @@@@@@@@  @@@  @@@     @@@@@@@@  @@@@@@@@  @@@
+        !@@       @@!       @@!  @@@  @@!  @@@  !@@       @@!  @@@     @@!  @@@  @@!  @@@  @@!
+        !@!       !@!       !@!  @!@  !@!  @!@  !@!       !@!  @!@     !@!  @!@  !@!  @!@  !@!
+        !!@@!!    @!!!:!    @!@!@!@!  @!@!!@!   !@!       @!@!@!@!     @!@!@!@!  @!@@!@!   !!@
+         !!@!!!   !!!!!:    !!!@!!!!  !!@!@!    !!!       !!!@!!!!     !!!@!!!!  !!@!!!    !!!
+             !:!  !!:       !!:  !!!  !!: :!!   :!!       !!:  !!!     !!:  !!!  !!:       !!:
+            !:!   :!:       :!:  !:!  :!:  !:!  :!:       :!:  !:!     :!:  !:!  :!:       :!:
+        :::: ::    :: ::::  ::   :::  ::   :::   ::: :::  ::   :::     ::   :::   ::        ::
+        :: : :    : :: ::    :   : :   :   : :   :: :: :   :   : :      :   : :   :        :  "
+  echo ""
+fi
+echo "${GREEN}${BOLD}RUN SEARCH API BY URL: https://${SEARCH_API_URL}/"
+echo ""
+echo "${GREEN}${BOLD}RUN SWAGGER API BY URL: http://${SEARCH_API_URL}/api/documentation"
+echo ""

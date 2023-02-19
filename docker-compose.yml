@@ -1,0 +1,86 @@
+version: "3.7"
+services:
+  search_api_clone_nginx:
+    container_name: search_api_clone_nginx
+    image: nginx:alpine
+    restart: unless-stopped
+    tty: true
+    ports:
+      - "80:80"
+      - "443:443"
+    depends_on:
+      - search_api_clone_php
+      - db
+    volumes:
+      - ./src/:/var/www/html
+      - ./docker/nginx/nginx.conf:/etc/nginx/nginx.conf
+      - ./docker/nginx/sites/:/etc/nginx/conf.d/
+      - ./docker/nginx/ssl/:/etc/ssl/
+    networks:
+      - app-network
+  search_api_clone_php:
+    container_name: search_api_clone_php
+    build:
+      context: ./src
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    tty: true
+    working_dir: /var/www/html
+    depends_on:
+      - redis
+    volumes:
+      - ./src/:/var/www/html
+      - ./docker/php/local.ini:/usr/local/etc/php/conf.d/local.ini
+    networks:
+      - app-network
+
+  redis:
+    container_name: search_api_clone_redis
+    image: "redis:alpine"
+    # command: redis-server --requirepass sOmE_sEcUrE_pAsS
+    ports:
+      - "6379:6379"
+    volumes:
+      - ./docker/redis/redis-data:/var/lib/redis
+      - ./docker/redis/redis.conf:/usr/local/etc/redis/redis.conf
+    environment:
+      - REDIS_REPLICATION_MODE=master
+    networks:
+      - app-network
+
+  #  composer:
+  #    container_name: composer
+  #    image: composer:latest
+  #    depends_on:
+  #      - search_api_clone_php
+  #    volumes:
+  #      - ./src/:/app
+  #    command: composer install --ignore-platform-reqs
+  #    networks:
+  #      - app-network
+
+  db:
+    image: "mysql:8.0"
+    container_name: "mysql"
+    restart: unless-stopped
+    tty: true
+    command: --sql_mode=''
+    ports:
+      - "3307:3306"
+    environment:
+      MYSQL_DATABASE: '${DB_NAME}'
+      MYSQL_USER: '${MYSQL_USER}'
+      MYSQL_PASSWORD: '${MYSQL_PASSWORD}'
+      MYSQL_ROOT_PASSWORD: '${MYSQL_ROOT_PASSWORD}'
+      SERVICE_TAGS: dev
+      SERVICE_NAME: db
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
+
+volumes:
+  dbdata:
+    driver: local
