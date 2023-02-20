@@ -1,4 +1,4 @@
 #!/usr/bin/env sh
 
 # shellcheck disable=SC2068
-docker exec search_api_php ./artisan $@
+docker exec search_api_clone_php ./artisan $@
