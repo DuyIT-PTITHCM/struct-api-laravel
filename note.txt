@@ -1,2 +1,8 @@
 Note
 - setup export and import (lib references Maatwebsite)
+- setup redis
+- job 
+- loging
+- mail
+- registers
+- services
