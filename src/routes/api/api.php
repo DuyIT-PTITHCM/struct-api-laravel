@@ -29,6 +29,9 @@ $router->get('/', function () use ($router) {
 Route::group(['middleware' => [], 'prefix' => 'v1.0', 'as' => 'v1.0'], function () use ($router) {
     Core::renderRoutes('api/v1.0', $router);
 });
+/**
+ * Version V2.0
+ */
 Route::group(['middleware' => [], 'prefix' => 'v2.0', 'as' => 'v2.0'], function () use ($router) {
     Core::renderRoutes('api/v2.0', $router);
 });
