@@ -1,0 +1,4 @@
+#!/usr/bin/env sh
+
+# shellcheck disable=SC2068
+docker exec backend ./artisan $@
