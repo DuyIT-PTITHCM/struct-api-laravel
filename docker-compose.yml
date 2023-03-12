@@ -69,17 +69,16 @@ services:
     tty: true
     command: --sql_mode=''
     ports:
-      - "3307:3306"
+      - "3309:3306"
     environment:
-      MYSQL_DATABASE: '${DB_NAME}'
-      MYSQL_USER: '${MYSQL_USER}'
-      MYSQL_PASSWORD: '${MYSQL_PASSWORD}'
-      MYSQL_ROOT_PASSWORD: '${MYSQL_ROOT_PASSWORD}'
+      MYSQL_DATABASE: learn-all
+      MYSQL_USER: homestead
+      MYSQL_PASSWORD: secret
+      MYSQL_ROOT_PASSWORD: secret
       SERVICE_TAGS: dev
       SERVICE_NAME: db
     volumes:
-      - ./db:/var/lib/mysql
-      - ./docker/mysql/my.cnf:/var/lib/mysql/my.cnf
+      - dbdatabase:/var/lib/mysql
     networks:
       - app-network
 
@@ -88,5 +87,5 @@ networks:
     driver: bridge
 
 volumes:
-  dbdata:
+  dbdatabase:
     driver: local
