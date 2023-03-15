@@ -1,0 +1,43 @@
+#!/usr/bin/env bash
+
+cd src || exit
+
+echo ""
+echo "Current working folder:${PWD}"
+echo ""
+
+echo "Start Pull Code"
+git pull origin master
+echo "End Pull Code"
+
+echo ""
+echo "composer install ..."
+composer install --no-dev --verbose --prefer-dist --optimize-autoloader --no-progress --no-interaction
+
+echo ""
+echo "Migration ...."
+php artisan migrate
+
+
+if [ "$1" == '--seeder' ]; then
+  echo ""
+  echo "Seeder ..."
+  php artisan db:seed
+fi
+
+echo ""
+echo "Generating Swagger docs ..."
+php artisan swagger-lume:publish
+php artisan swagger-lume:generate
+
+echo ""
+echo "Clear Cache ..."
+php artisan cache:clear
+
+echo ""
+echo "Set Permission folder Storage/*"
+sudo chmod -R 775 storage
+
+echo ""
+echo "Finish."
+echo ""
